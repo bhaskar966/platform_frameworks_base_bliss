@@ -1962,19 +1962,6 @@ public final class CameraManager {
                  * if the package name does not falls in this bucket
                  */
                 boolean exposeAuxCamera = Camera.shouldExposeAuxCamera();
-                boolean exposeAuxCamera = false;
-                String packageName = ActivityThread.currentOpPackageName();
-                String packageList = SystemProperties.get("vendor.camera.aux.packagelist");
-                if (packageList.length() > 0) {
-                    TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
-                    splitter.setString(packageList);
-                    for (String str : splitter) {
-                        if (packageName.equals(str)) {
-                            exposeAuxCamera = true;
-                            break;
-                        }
-                    }
-                }
                 if (exposeAuxCamera == false && (Integer.parseInt(cameraId) >= 2)) {
                     throw new IllegalArgumentException("invalid cameraId");
                 }
@@ -2385,25 +2372,11 @@ public final class CameraManager {
             /* Force to ignore the aux or composite camera torch status update
              * if the package name does not falls in this bucket
              */
-            boolean exposeMonoCamera = false;
-            String packageName = ActivityThread.currentOpPackageName();
-            String packageList = SystemProperties.get("vendor.camera.aux.packagelist");
-            if (packageList.length() > 0) {
-                TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
-                splitter.setString(packageList);
-                for (String str : splitter) {
-                    if (packageName.equals(str)) {
-                        exposeMonoCamera = true;
-                        break;
-                    }
-                }
+            boolean exposeAuxCamera = Camera.shouldExposeAuxCamera();
+            if (exposeAuxCamera == false && Integer.parseInt(id) >= 2) {
+                Log.w(TAG, "ignore the torch status update of camera: " + id);
+                return;
             }
-
-            if (exposeMonoCamera == false) {
-                if (Integer.parseInt(id) >= 2) {
-                    Log.w(TAG, "ignore the torch status update of camera: " + id);
-                    return;
-                }
 
 
             if (!validTorchStatus(status)) {
